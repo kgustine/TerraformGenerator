@@ -8,6 +8,7 @@ import org.terraform.biome.cavepopulators.MasterCavePopulatorDistributor;
 import org.terraform.coregen.populatordata.PopulatorDataAbstract;
 import org.terraform.coregen.populatordata.PopulatorDataSpigotAPI;
 import org.terraform.data.TerraformWorld;
+import org.terraform.main.StructureSpawnLogger;
 import org.terraform.main.TerraformGeneratorPlugin;
 import org.terraform.main.config.TConfig;
 import org.terraform.populators.AmethystGeodePopulator;
@@ -268,6 +269,16 @@ public class TerraformPopulator extends BlockPopulator {
                 // Bukkit.getPluginManager().callEvent(new TerraformStructureSpawnEvent(data.getChunkX()*16+8, data.getChunkZ()*16+8, spop.getClass().getName()));
 
                 spop.populate(tw, data);
+                int blockX = data.getChunkX() * 16 + 8;
+                int blockZ = data.getChunkZ() * 16 + 8;
+                                StructureSpawnLogger.logSpawn(tw,
+                                                spop.getClass().getSimpleName(),
+                                                data.getChunkX(),
+                                                data.getChunkZ(),
+                        blockX,
+                        GenUtils.getHighestGround(data, blockX, blockZ),
+                        blockZ
+                                );
             }
         }
     }
