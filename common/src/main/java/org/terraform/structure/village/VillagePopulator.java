@@ -2,6 +2,7 @@ package org.terraform.structure.village;
 
 import org.jetbrains.annotations.NotNull;
 import org.terraform.biome.BiomeBank;
+import org.terraform.biome.BiomeType;
 import org.terraform.coregen.populatordata.PopulatorDataAbstract;
 import org.terraform.data.TerraformWorld;
 import org.terraform.main.config.TConfig;
@@ -38,12 +39,9 @@ public class VillagePopulator extends SingleMegaChunkStructurePopulator {
 
         // Height no longer checked in the interest of speed.
 
-        if (biome == (BiomeBank.PLAINS)
-            || biome == (BiomeBank.FOREST)
-            || biome == (BiomeBank.SAVANNA)
-            || biome == (BiomeBank.TAIGA)
-            || biome == (BiomeBank.SCARLET_FOREST)
-            || biome == (BiomeBank.CHERRY_GROVE))
+        if (BiomeBank.isBiomeEnabled(biome)
+            && biome.getType() != BiomeType.OCEANIC
+            && biome.getType() != BiomeType.DEEP_OCEANIC)
         {
 
             return rollSpawnRatio(tw, chunkX, chunkZ);
@@ -88,13 +86,18 @@ public class VillagePopulator extends SingleMegaChunkStructurePopulator {
 
     @Override
     public boolean isEnabled() {
-        return TConfig.areStructuresEnabled()
-               && (BiomeBank.isBiomeEnabled(BiomeBank.PLAINS)
-                   || BiomeBank.isBiomeEnabled(BiomeBank.FOREST)
-                   || BiomeBank.isBiomeEnabled(BiomeBank.SAVANNA)
-                   || BiomeBank.isBiomeEnabled(BiomeBank.TAIGA)
-                   || BiomeBank.isBiomeEnabled(BiomeBank.SCARLET_FOREST)
-                   || BiomeBank.isBiomeEnabled(BiomeBank.CHERRY_GROVE))
-               && TConfig.c.STRUCTURES_PLAINSVILLAGE_ENABLED;
+        if (!TConfig.areStructuresEnabled() || !TConfig.c.STRUCTURES_PLAINSVILLAGE_ENABLED) {
+            return false;
+        }
+
+        for (BiomeBank bank : BiomeBank.values()) {
+            if (BiomeBank.isBiomeEnabled(bank)
+                && bank.getType() != BiomeType.OCEANIC
+                && bank.getType() != BiomeType.DEEP_OCEANIC)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }
