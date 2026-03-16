@@ -17,6 +17,7 @@ import org.terraform.data.SimpleBlock;
 import org.terraform.data.TerraformWorld;
 import org.terraform.data.Wall;
 import org.terraform.event.TerraformStructureSpawnEvent;
+import org.terraform.main.StructureSpawnLogger;
 import org.terraform.main.TerraformGeneratorPlugin;
 import org.terraform.main.config.TConfig;
 import org.terraform.structure.JigsawState;
@@ -27,7 +28,11 @@ import org.terraform.structure.room.CubeRoom;
 import org.terraform.structure.room.PathPopulatorData;
 import org.terraform.structure.room.RoomLayoutGenerator;
 import org.terraform.structure.room.path.PathState;
+import org.terraform.structure.pillager.outpost.OutpostPopulator;
 import org.terraform.structure.stronghold.StrongholdPopulator;
+import org.terraform.structure.village.VillagePopulator;
+import org.terraform.structure.villagehouse.VillageHousePopulator;
+import org.terraform.utils.GenUtils;
 import org.terraform.utils.datastructs.ConcurrentLRUCache;
 
 import javax.annotation.Nullable;
@@ -160,6 +165,14 @@ public class TerraformStructurePopulator extends BlockPopulator {
                                                  + ","
                                                  + data.getChunkZ());
             new StrongholdPopulator().populate(tw, data);
+                StructureSpawnLogger.logSpawn(tw,
+                    StrongholdPopulator.class.getSimpleName(),
+                    data.getChunkX(),
+                    data.getChunkZ(),
+                    data.getChunkX() * 16 + 8,
+                        GenUtils.getHighestGround(data, data.getChunkX() * 16 + 8, data.getChunkZ() * 16 + 8),
+                    data.getChunkZ() * 16 + 8
+                );
         }
 
         // Only check singlemegachunkstructures if this chunk is a central chunk.
@@ -198,7 +211,20 @@ public class TerraformStructurePopulator extends BlockPopulator {
                                   spop.getClass().getName()
                           ));
                     spop.populate(tw, data);
-                    break;
+                        StructureSpawnLogger.logSpawn(tw,
+                            spop.getClass().getSimpleName(),
+                            data.getChunkX(),
+                            data.getChunkZ(),
+                            blockCoords[0],
+                                GenUtils.getHighestGround(data, blockCoords[0], blockCoords[1]),
+                            blockCoords[1]
+                        );
+                    // Allow one village-type structure and one non-village large structure to coexist.
+                    if (!(spop instanceof VillagePopulator)
+                        && !(spop instanceof VillageHousePopulator)
+                        && !(spop instanceof OutpostPopulator)) {
+                        break;
+                    }
                 }
             }
         }
