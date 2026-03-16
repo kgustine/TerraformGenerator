@@ -400,6 +400,10 @@ public class TConfig extends YamlFileInterface {
     public int STRUCTURES_STRONGHOLD_MIN_Y = 0;
     @YamlKey("structures.stronghold.max-y")
     public int STRUCTURES_STRONGHOLD_MAX_Y = 25;
+    @YamlKey("structures.stronghold.first-ring-radius")
+    public int STRUCTURES_STRONGHOLD_FIRST_RING_RADIUS = 1408;
+    @YamlKey("structures.stronghold.ring-spacing")
+    public int STRUCTURES_STRONGHOLD_RING_SPACING = 3072;
     @YamlKey("structures.monument.enabled")
     public boolean STRUCTURES_MONUMENT_ENABLED = true;
     @YamlKey("structures.monument.spawn-ratio")
