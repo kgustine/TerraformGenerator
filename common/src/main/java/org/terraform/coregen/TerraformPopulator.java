@@ -273,6 +273,7 @@ public class TerraformPopulator extends BlockPopulator {
                 int blockZ = data.getChunkZ() * 16 + 8;
                                 StructureSpawnLogger.logSpawn(tw,
                                                 spop.getClass().getSimpleName(),
+                                                "small",
                                                 data.getChunkX(),
                                                 data.getChunkZ(),
                         blockX,

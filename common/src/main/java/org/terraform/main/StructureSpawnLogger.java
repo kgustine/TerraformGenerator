@@ -19,6 +19,7 @@ public final class StructureSpawnLogger {
 
     public static void logSpawn(@NotNull TerraformWorld tw,
                                 @NotNull String structureName,
+                                @NotNull String structureType,
                                 int chunkX,
                                 int chunkZ,
                                 int blockX,
@@ -35,6 +36,7 @@ public final class StructureSpawnLogger {
                 Instant.now().toString(),
                 sanitize(tw.getName()),
                 sanitize(structureName),
+                sanitize(structureType),
                 Integer.toString(chunkX),
                 Integer.toString(chunkZ),
                 Integer.toString(blockX),
@@ -46,7 +48,8 @@ public final class StructureSpawnLogger {
             try {
                 Files.createDirectories(out.getParent());
                 if (Files.notExists(out)) {
-                    String header = "timestamp,world,structure,chunk_x,chunk_z,block_x,block_y,block_z" + System.lineSeparator();
+                    String header = "timestamp,world,structure,structure_type,chunk_x,chunk_z,block_x,block_y,block_z"
+                                    + System.lineSeparator();
                     Files.writeString(out,
                             header,
                             StandardCharsets.UTF_8,

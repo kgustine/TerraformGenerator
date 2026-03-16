@@ -14,10 +14,27 @@ if (-not (Test-Path -Path $CsvPath)) {
 
 $rows = Import-Csv -Path $CsvPath
 
-# Backward compatibility for old logs that didn't include block_y.
+# Backward compatibility for old logs that didn't include block_y or structure_type.
+$smallStructures = @(
+    "SmallDungeonPopulator",
+    "ShipwreckPopulator",
+    "BuriedTreasurePopulator",
+    "RuinedPortalPopulator",
+    "IglooPopulator",
+    "DesertWellPopulator",
+    "WitchHutPopulator"
+)
+
 $rows = $rows | ForEach-Object {
     if (-not $_.PSObject.Properties['block_y']) {
         $_ | Add-Member -NotePropertyName block_y -NotePropertyValue 0
+    }
+    if (-not $_.PSObject.Properties['structure_type']) {
+        $type = if ($smallStructures -contains $_.structure) { "small" } else { "large" }
+        $_ | Add-Member -NotePropertyName structure_type -NotePropertyValue $type
+    }
+    elseif ([string]::IsNullOrWhiteSpace([string]$_.structure_type)) {
+        $_.structure_type = if ($smallStructures -contains $_.structure) { "small" } else { "large" }
     }
     $_
 }
@@ -51,22 +68,14 @@ if ($Radius -ge 0) {
 Write-Host ""
 
 $grouped = $rows |
-    Group-Object structure |
+    Group-Object structure, structure_type |
     Sort-Object Count -Descending |
-    Select-Object @{Name="Structure";Expression={$_.Name}}, @{Name="Count";Expression={$_.Count}}
+    Select-Object @{Name="Structure";Expression={$_.Group[0].structure}},
+                  @{Name="Type";Expression={$_.Group[0].structure_type}},
+                  @{Name="Count";Expression={$_.Count}}
 
-$smallStructures = @(
-    "SmallDungeonPopulator",
-    "ShipwreckPopulator",
-    "BuriedTreasurePopulator",
-    "RuinedPortalPopulator",
-    "IglooPopulator",
-    "DesertWellPopulator",
-    "WitchHutPopulator"
-)
-
-$smallGrouped = $grouped | Where-Object { $smallStructures -contains $_.Structure }
-$largeGrouped = $grouped | Where-Object { $smallStructures -notcontains $_.Structure }
+$smallGrouped = $grouped | Where-Object { $_.Type -eq "small" }
+$largeGrouped = $grouped | Where-Object { $_.Type -eq "large" }
 
 Write-Host "Large structures"
 if ($largeGrouped -and $largeGrouped.Count -gt 0) {
@@ -88,7 +97,7 @@ else {
 $smallTotal = 0
 $largeTotal = 0
 foreach ($entry in $grouped) {
-    if ($smallStructures -contains $entry.Structure) {
+    if ($entry.Type -eq "small") {
         $smallTotal += [int]$entry.Count
     }
     else {

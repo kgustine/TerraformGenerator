@@ -167,6 +167,7 @@ public class TerraformStructurePopulator extends BlockPopulator {
             new StrongholdPopulator().populate(tw, data);
                 StructureSpawnLogger.logSpawn(tw,
                     StrongholdPopulator.class.getSimpleName(),
+                    "large",
                     data.getChunkX(),
                     data.getChunkZ(),
                     data.getChunkX() * 16 + 8,
@@ -213,6 +214,7 @@ public class TerraformStructurePopulator extends BlockPopulator {
                     spop.populate(tw, data);
                         StructureSpawnLogger.logSpawn(tw,
                             spop.getClass().getSimpleName(),
+                            "large",
                             data.getChunkX(),
                             data.getChunkZ(),
                             blockCoords[0],
