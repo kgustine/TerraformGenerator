@@ -47,3 +47,13 @@ WorldGenTestServer/
 
 # No spigot 1.17 jar
 spigot-1.17.jar
+
+
+#custom ignore
+config/
+
+# local patch backups
+patches/
+
+# nested module gradle caches
+**/.gradle/
