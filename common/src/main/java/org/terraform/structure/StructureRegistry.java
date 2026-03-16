@@ -49,25 +49,34 @@ public class StructureRegistry {
         TerraformWorld tw = key.tw;
         MegaChunk mc = key.mc;
         Random structRand = tw.getHashedRand(9, mc.getX(), mc.getZ());
-        int maxStructures = 3; // GenUtils.randInt(structRand, 1, TConfigOption.STRUCTURES_MEGACHUNK_MAXSTRUCTURES);
-        SingleMegaChunkStructurePopulator[] pops = new SingleMegaChunkStructurePopulator[maxStructures];
-        int size = 0;
+        int maxStructures = Math.max(1, TConfig.c.STRUCTURES_MEGACHUNK_MAXSTRUCTURES);
+        ArrayList<SingleMegaChunkStructurePopulator> pops = new ArrayList<>(maxStructures + 1);
+        int nonVillageStructures = 0;
 
-        // Check if there are any mega dungeons enabled
+        // Villages roll independently so underground/other large structures don't consume village chances.
+        if (largeStructureRegistry.containsKey(StructureType.VILLAGE)) {
+            for (SingleMegaChunkStructurePopulator pop : largeStructureRegistry.get(StructureType.VILLAGE)) {
+                int[] coords = mc.getCenterBiomeSectionBlockCoords();
+                if (TConfig.areStructuresEnabled() && pop.canSpawn(tw,
+                        coords[0] >> 4,
+                        coords[1] >> 4,
+                        mc.getCenterBiomeSection(tw).getBiomeBank()
+                ))
+                {
+                    pops.add(pop);
+                    break; // ONLY ONE VILLAGE TYPE. Do not try to spawn multiple.
+                }
+            }
+        }
+
+        // Mega Dungeons
         if (largeStructureRegistry.containsKey(StructureType.MEGA_DUNGEON)
             && largeStructureRegistry.get(StructureType.MEGA_DUNGEON).length > 0)
         {
-            // First check if the megadungeons can spawn. Shuffle the array first.
-            SingleMegaChunkStructurePopulator[] available = (SingleMegaChunkStructurePopulator[]) shuffleArray(
-                    structRand,
+            for (SingleMegaChunkStructurePopulator pop : (SingleMegaChunkStructurePopulator[]) shuffleArray(structRand,
                     largeStructureRegistry.get(StructureType.MEGA_DUNGEON)
-            );
-            for (SingleMegaChunkStructurePopulator pop : available) {
-                int[] coords = mc.getCenterBiomeSectionBlockCoords(); // pop.getCoordsFromMegaChunk(tw, mc);
-                if (coords == null) {
-                    continue;
-                }
-
+            )) {
+                int[] coords = mc.getCenterBiomeSectionBlockCoords();
                 if (TConfig.areStructuresEnabled() && pop.canSpawn(
                         tw,
                         coords[0] >> 4,
@@ -75,16 +84,16 @@ public class StructureRegistry {
                         mc.getCenterBiomeSection(tw).getBiomeBank()
                 ))
                 {
-                    pops[size] = pop;
-                    size++;
+                    pops.add(pop);
+                    nonVillageStructures++;
                     break; // ONLY ONE MEGA DUNGEON.
                 }
             }
         }
-        // Mega Dungeon will be in slot 0 (highest priority). The others are backups.
+
         // if (size == 0) {
         // TerraformGeneratorPlugin.logger.info(ChatColor.YELLOW + "MC: " + mc.getX() + "," + mc.getZ() + " - No Mega Dungeon");
-        StructureType[] types = {StructureType.LARGE_CAVE, StructureType.VILLAGE, StructureType.LARGE_MISC};
+        StructureType[] types = {StructureType.LARGE_CAVE, StructureType.LARGE_MISC};
         types = (StructureType[]) shuffleArray(structRand, types);
         for (StructureType type : types) {
             if (largeStructureRegistry.containsKey(type)) {
@@ -96,24 +105,21 @@ public class StructureRegistry {
                             mc.getCenterBiomeSection(tw).getBiomeBank()
                     ))
                     {
-                        pops[size] = pop;
-                        size++;
+                        pops.add(pop);
+                        nonVillageStructures++;
                         break; // ONLY ONE OF EACH TYPE. Do not try to spawn multiple.
                     }
                 }
             }
 
             // Stop trying if max structures is hit
-            if (size >= maxStructures) {
+            if (nonVillageStructures >= maxStructures) {
                 break;
             }
         }
         // }
 
-        SingleMegaChunkStructurePopulator[] returnVal = new SingleMegaChunkStructurePopulator[size];
-        System.arraycopy(pops, 0, returnVal, 0, size);
-
-        return returnVal;
+        return pops.toArray(new SingleMegaChunkStructurePopulator[0]);
     });
 
 
