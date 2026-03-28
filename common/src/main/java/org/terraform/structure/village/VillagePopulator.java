@@ -14,6 +14,11 @@ import java.util.Random;
 
 public class VillagePopulator extends SingleMegaChunkStructurePopulator {
 
+    private static boolean isSavannaPlateau(@NotNull BiomeBank biome) {
+        // Both shattered savanna variants map to SAVANNA_PLATEAU in Bukkit.
+        return biome == BiomeBank.SHATTERED_SAVANNA || biome == BiomeBank.SHATTERED_SAVANNA_PEAK;
+    }
+
     @Override
     public @NotNull Random getHashedRandom(@NotNull TerraformWorld tw, int chunkX, int chunkZ) {
         return tw.getHashedRand(11111199, chunkX, chunkZ);
@@ -41,7 +46,8 @@ public class VillagePopulator extends SingleMegaChunkStructurePopulator {
 
         if (BiomeBank.isBiomeEnabled(biome)
             && biome.getType() != BiomeType.OCEANIC
-            && biome.getType() != BiomeType.DEEP_OCEANIC)
+            && biome.getType() != BiomeType.DEEP_OCEANIC
+            && !isSavannaPlateau(biome))
         {
 
             return rollSpawnRatio(tw, chunkX, chunkZ);
@@ -93,7 +99,8 @@ public class VillagePopulator extends SingleMegaChunkStructurePopulator {
         for (BiomeBank bank : BiomeBank.values()) {
             if (BiomeBank.isBiomeEnabled(bank)
                 && bank.getType() != BiomeType.OCEANIC
-                && bank.getType() != BiomeType.DEEP_OCEANIC)
+                && bank.getType() != BiomeType.DEEP_OCEANIC
+                && !isSavannaPlateau(bank))
             {
                 return true;
             }
